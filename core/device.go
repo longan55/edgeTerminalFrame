@@ -16,3 +16,44 @@ package core
 //  C                    E         B
 // 设备, ———— 协议通道  数据源, 数据服务器, 模板
 //		 \___ 协议通道  数据源, 数据服务器, 模板
+
+// type Identity interface{
+// 	Key()string
+// 	Name()string
+// }
+
+// type IDCard struct{
+// 	key string
+// 	name string
+// }
+
+// func (card *IDCard)Key()string{
+// 	return card.key
+// }
+
+// func (card *IDCard)Name()string{
+// 	return card.name
+// }
+
+type Device struct {
+	Key  string
+	Name string
+}
+
+func NewDevice() *Device {
+	return &Device{}
+}
+
+func (dev *Device) GetKey() string {
+	return dev.Key
+}
+func (dev *Device) SetKey(key string) {
+	dev.Key = key
+}
+
+func (dev *Device) GetName() string {
+	return dev.Name
+}
+func (dev *Device) SetName(name string) {
+	dev.Name = name
+}
