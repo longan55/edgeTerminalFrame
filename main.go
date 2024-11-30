@@ -2,10 +2,13 @@ package main
 
 import (
 	"edgeTerminalFrame/core"
+	"edgeTerminalFrame/global"
 	"fmt"
 )
 
 func main() {
+	//init logger
+	global.InitLogger()
 	//创建Host
 	hostinfo := core.NewHostInfo()
 	hostinfo.SetName("网关主体")

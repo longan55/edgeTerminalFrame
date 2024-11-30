@@ -1,0 +1,17 @@
+system:
+  #取值: devlopment, test, production
+  #devlopment, test环境会将日志同时输出控制台和写入文件,production环境只写入文件
+  environment: devlopment
+logConf:
+  # debug、info、warn、error、dpanic、panic、fatal
+  level: debug
+  #日志路径
+  path: "log"
+  #日志名格式
+  partten: "%Y%m%d_%H%M.log"
+  #日志文件最大保存时间 单位天 默认7天
+  maxAge: 7
+  #切割时间  整数 单位小时 默认1小时
+  rotationTime: 1
+  #true: 开启压缩, false: 关闭压缩
+  compress: true
