@@ -5,9 +5,17 @@ import (
 	"net"
 )
 
+// Connector 主要用来管理重连
 type Connector interface {
 	Connect() error
 	Close() error
+	// Read(b []byte) (n int, err error)
+	// Write(b []byte) (n int, err error)
+	//LocalAddr() Addr
+	//RemoteAddr() Addr
+	//SetDeadline(t time.Time) error
+	//SetReadDeadline(t time.Time) error
+	//SetWriteDeadline(t time.Time) error
 }
 
 type TcpConnector struct {
@@ -32,6 +40,14 @@ func (connector *TcpConnector) Connect() error {
 
 func (connector *TcpConnector) Close() error {
 	return connector.conn.Close()
+}
+
+func (connector *TcpConnector) Read(b []byte) (n int, err error) {
+	return connector.conn.Read(b)
+}
+
+func (connector *TcpConnector) Write(b []byte) (n int, err error) {
+	return connector.conn.Write(b)
 }
 
 type TcpOptions struct {

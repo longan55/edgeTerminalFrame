@@ -29,7 +29,7 @@ func onConnect(client mqtt.Client) {
 	//global.Logger.Info("mqtt Connected")
 }
 func onConnectLost(client mqtt.Client, err error) {
-	// 自定义重连逻辑
+	// 自定义重连逻辑 todo 了解该库的Connect()是否自动重连
 	for i := 0; i < 3; i++ {
 		// 尝试重新连接
 		if token := client.Connect(); token.Wait() && token.Error() == nil {
