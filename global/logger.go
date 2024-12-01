@@ -11,6 +11,7 @@ import (
 	"time"
 
 	rotate "github.com/lestrrat-go/file-rotatelogs"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -39,8 +40,8 @@ func InitLogger() {
 }
 
 func initLogger() error {
-	if err := os.MkdirAll(AppConfig.LogConf.Path, os.ModeDir|os.ModePerm); err != nil {
-		return fmt.Errorf("create log dir [%s] error: %w", AppConfig.LogConf.Path, err)
+	if err := os.MkdirAll(viper.GetString(LOG_PATH), os.ModeDir|os.ModePerm); err != nil {
+		return fmt.Errorf("create log dir [%s] error: %w", viper.GetString(LOG_PATH), err)
 	}
 
 	var writer *rotate.RotateLogs
@@ -49,18 +50,18 @@ func initLogger() error {
 	switch runtime.GOOS {
 	case "windows":
 		writer, err = rotate.New(
-			path.Join(AppConfig.LogConf.Path, AppConfig.LogConf.Partten),
-			rotate.WithMaxAge(time.Duration(AppConfig.LogConf.MaxAge)*24*time.Hour),          //文件最大保存时间
-			rotate.WithRotationTime(time.Duration(AppConfig.LogConf.RotationTime)*time.Hour), //日志切割时间间隔
-			rotate.WithHandler(rotate.HandlerFunc(CompressLog)),                              //注册 日志切割时回调函数-压缩日志
+			path.Join(viper.GetString(LOG_PATH), viper.GetString(LOG_PARTTEN)),
+			rotate.WithMaxAge(time.Duration(viper.GetInt(LOG_MAXAGE))*24*time.Hour),      //文件最大保存时间
+			rotate.WithRotationTime(time.Duration(viper.GetInt(LOG_ROTATION))*time.Hour), //日志切割时间间隔
+			rotate.WithHandler(rotate.HandlerFunc(CompressLog)),                          //注册 日志切割时回调函数-压缩日志
 		)
 	case "linux":
 		writer, err = rotate.New(
-			path.Join(AppConfig.LogConf.Path, AppConfig.LogConf.Partten),
-			rotate.WithLinkName("latest.log"),                                                // 创建一个软链接指向最新的日志文件
-			rotate.WithMaxAge(time.Duration(AppConfig.LogConf.MaxAge)*24*time.Hour),          //文件最大保存时间
-			rotate.WithRotationTime(time.Duration(AppConfig.LogConf.RotationTime)*time.Hour), //日志切割时间间隔
-			rotate.WithHandler(rotate.HandlerFunc(CompressLog)),                              //注册 日志切割时回调函数-压缩日志
+			path.Join(viper.GetString(LOG_PATH), viper.GetString(LOG_PARTTEN)),
+			rotate.WithLinkName("latest.log"),                                            // 创建一个软链接指向最新的日志文件
+			rotate.WithMaxAge(time.Duration(viper.GetInt(LOG_MAXAGE))*24*time.Hour),      //文件最大保存时间
+			rotate.WithRotationTime(time.Duration(viper.GetInt(LOG_ROTATION))*time.Hour), //日志切割时间间隔
+			rotate.WithHandler(rotate.HandlerFunc(CompressLog)),                          //注册 日志切割时回调函数-压缩日志
 		)
 	}
 	if err != nil {
@@ -70,7 +71,7 @@ func initLogger() error {
 	// 创建一个WriteSyncer，可以是os.Stdout、os.Stderr等等
 	var ws zapcore.WriteSyncer
 
-	switch AppConfig.System.Environment {
+	switch viper.GetString(SYS_ENV) {
 	case "devlopment", "test":
 		ws = zapcore.AddSync(io.MultiWriter(writer, os.Stdout))
 	default:
@@ -79,7 +80,7 @@ func initLogger() error {
 
 	// 配置日志级别
 	levelConf := zap.NewAtomicLevel()
-	level, err := zapcore.ParseLevel(AppConfig.LogConf.Level)
+	level, err := zapcore.ParseLevel(viper.GetString(LOG_LEVEL))
 	if err != nil {
 		log.Printf("parse log level error: %v\n", err)
 		levelConf.SetLevel(zapcore.InfoLevel)
@@ -89,7 +90,7 @@ func initLogger() error {
 
 	// 编码器配置
 	var encoderConfig zapcore.EncoderConfig
-	switch AppConfig.System.Environment {
+	switch viper.GetString(SYS_ENV) {
 	case "production":
 		encoderConfig = zap.NewProductionEncoderConfig()
 	default:
@@ -111,13 +112,13 @@ func initLogger() error {
 	Logger = logger
 
 	Logger.Info("日志记录器创建成功")
-	Logger.Info("配置文件", zap.Any("Content", AppConfig))
+	Logger.Info("配置文件", zap.Any("Content", viper.AllSettings()))
 	return nil
 }
 
 func CompressLog(event rotate.Event) {
 	//判断是否开启压缩
-	if !AppConfig.LogConf.Compress {
+	if !viper.GetBool(LOG_USE_COMPRESS) {
 		return
 	}
 	//判断是否是 日志切割 事件

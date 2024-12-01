@@ -2,6 +2,8 @@ system:
   #取值: devlopment, test, production
   #devlopment, test环境会将日志同时输出控制台和写入文件,production环境只写入文件
   environment: devlopment
+  # true: watching config; false: don't watching config
+  watchConfig: false
 logConf:
   # debug、info、warn、error、dpanic、panic、fatal
   level: debug

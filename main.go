@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	global.InitConfig()
 	//init logger
 	global.InitLogger()
 	//创建Host
