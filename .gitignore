@@ -27,3 +27,7 @@ go.work.sum
 #log
 log
 *.log
+
+#ide
+.idea
+.vscode
