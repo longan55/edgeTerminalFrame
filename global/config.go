@@ -32,7 +32,7 @@ const (
 // key/value store
 // default
 
-func InitConfig() {
+func LoadConfig() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("/etc/etf")
