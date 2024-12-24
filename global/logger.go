@@ -28,12 +28,12 @@ type LogConf struct {
 var Logger *zap.Logger
 
 func InitLogger() {
-	log.SetFlags(log.Llongfile | log.Ldate | log.Ltime)
-	logfile, err := os.OpenFile("./native.log", os.O_CREATE|os.O_APPEND, 0755)
-	if err != nil {
-		log.Fatalln(err)
-	}
 	if err := initLogger(); err != nil {
+		log.SetFlags(log.Llongfile | log.Ldate | log.Ltime)
+		logfile, err := os.OpenFile("./native.log", os.O_CREATE|os.O_APPEND, 0755)
+		if err != nil {
+			log.Fatalln(err)
+		}
 		log.SetOutput(io.MultiWriter(logfile, os.Stdout))
 		log.Printf("init logger error: %v\n", err)
 	}
@@ -102,12 +102,14 @@ func initLogger() error {
 
 	// 创建Encoder
 	encoder := zapcore.NewConsoleEncoder(encoderConfig)
+	//zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
 
 	// 创建core
 	core := zapcore.NewCore(encoder, ws, levelConf)
+	// core := zapcore.NewTee(c1, c2)
 
-	// 创建logger
-	logger := zap.New(core).WithOptions(zap.AddCaller())
+	// 创建logger  , zap.AddCallerSkip(1)
+	logger := zap.New(core, zap.AddCaller())
 
 	Logger = logger
 
