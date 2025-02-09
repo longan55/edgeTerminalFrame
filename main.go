@@ -1,16 +1,38 @@
 package main
 
 import (
+	"edgeTerminalFrame/comm"
 	"edgeTerminalFrame/core"
 	"edgeTerminalFrame/global"
+	"edgeTerminalFrame/gopool"
+	"fmt"
+	"runtime/debug"
 
 	"go.uber.org/zap"
 )
 
-func main() {
+func bootStrap() {
 	global.LoadConfig()
+
 	//init logger
 	global.InitLogger()
+
+	// 3.加载数据库
+	global.InitBoltdb()
+
+	// 4.连接池、管理重连和状态
+	comm.InitConnect()
+	global.Logger.Info("连接管理池启动成功")
+}
+
+func main() {
+	bootStrap()
+	defer func() {
+		if e := recover(); e != nil {
+			global.Logger.Panic(fmt.Sprintf("%+v\n%v", e, fmt.Sprint(string(debug.Stack()))))
+		}
+	}()
+
 	//创建Host
 	hostinfo := core.NewHostInfo()
 	hostinfo.SetName("网关主体")
@@ -31,6 +53,14 @@ func main() {
 	global.Logger.Debug("DEBUG")
 	global.Logger.Info("Info")
 	global.Logger.Error("Error", zap.String("Key", "value"))
+
+	gopool.Go(func() {
+		if err := core.EdgeCore.Preload(); err != nil {
+			global.Logger.Error("Preload", zap.Error(err))
+		}
+	})
+	// 监听退出信号->优雅退出
+	global.GracefullyExit()
 }
 
 // 1. 终端基础信息管理

@@ -18,6 +18,19 @@ const (
 	LOG_MAXAGE       = "logConf.maxAge"
 	LOG_ROTATION     = "logConf.rotationTime"
 	LOG_USE_COMPRESS = "logConf.compress"
+	//
+	FANUC_LIB = "fanuc.lib"
+	FANUC_LOG = "fanuc.log"
+	//
+	CORE_SN         = "core.sn"
+	CORE_WORKPATH   = "core.workpath"
+	CORE_PLUGINPATH = "core.pluginpath"
+	//comm
+	//mqtt
+	MQTT_BROKER = "comm.mqtt.broker"
+	MQTT_USER   = "comm.mqtt.user"
+	MQTT_PASS   = "comm.mqtt.pass"
+	MQTT_TOPIC  = "comm.mqtt.topic"
 )
 
 //setting defaults

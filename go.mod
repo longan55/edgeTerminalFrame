@@ -5,6 +5,7 @@ go 1.22.2
 require github.com/shirou/gopsutil v3.21.11+incompatible
 
 require (
+	github.com/boltdb/bolt v1.3.1 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.5.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
