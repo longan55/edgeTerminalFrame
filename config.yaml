@@ -19,3 +19,8 @@ logConf:
   rotationTime: 24
   #true: 开启压缩, false: 关闭压缩
   compress: false
+
+gateway:
+  name: 1号网关
+  sn: LONGAN55-EDGEGATEWAY-9527
+  

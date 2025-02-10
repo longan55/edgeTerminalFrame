@@ -37,8 +37,6 @@ func main() {
 	hostinfo := core.NewHostInfo()
 	hostinfo.SetName("网关主体")
 	hostinfo.SetSN("SNNNNNNNN")
-	hostinfo.SetPosition("深圳")
-	hostinfo.SetDescription("注释内容")
 	//host := core.NewHost(hostinfo)
 	//
 	// cpuinfo := host.GetCpuInfo()
