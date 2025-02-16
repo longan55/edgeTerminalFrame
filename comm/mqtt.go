@@ -37,7 +37,10 @@ func InitMqtt(ops MQTTOptions) (err error) {
 	once.Do(func() {
 		MqttCli = NewMqttSender(options)
 		//注册退出任务: 断开Mqtt
-		global.RegisterQuitTask(MqttCli.Close, "断开Mqtt连接")
+		global.RegisterQuitTask(global.Task{
+			F:       MqttCli.Close,
+			Content: "断开Mqtt连接",
+		})
 	})
 	//更新如何
 

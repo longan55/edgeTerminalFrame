@@ -66,16 +66,19 @@ func InitBoltdb() {
 		Logger.Info("数据桶创建成功", zap.String("bucket", bucket))
 	}
 
-	RegisterQuitTask(func() error {
-		if Mydb != nil && Mydb.boltdb != nil {
-			// stats := Mydb.boltdb.Stats()
-			// if stats.TxStats.Open > 0 {
-			// 	log.Println("There are open transactions!")
-			// }
-			return Mydb.boltdb.Close()
-		}
-		return errors.New("boltdb为空或已关闭")
-	}, "关闭boltdb")
+	RegisterQuitTask(Task{
+		F: func() error {
+			if Mydb != nil && Mydb.boltdb != nil {
+				// stats := Mydb.boltdb.Stats()
+				// if stats.TxStats.Open > 0 {
+				// 	log.Println("There are open transactions!")
+				// }
+				return Mydb.boltdb.Close()
+			}
+			return errors.New("boltdb为空或已关闭")
+		},
+		Content: "关闭boltdb",
+	})
 }
 
 func (my mydb) CreateBucketIfNotExists(bucketname string) error {

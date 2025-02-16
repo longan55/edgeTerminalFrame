@@ -16,7 +16,7 @@ func bootStrap() {
 
 	//init logger
 	global.InitLogger()
-
+	gopool.SetLogger(global.Logger)
 	// 3.加载数据库
 	global.InitBoltdb()
 

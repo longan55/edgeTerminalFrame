@@ -18,6 +18,8 @@ import (
 	"context"
 	"fmt"
 	"sync"
+
+	"go.uber.org/zap"
 )
 
 // defaultPool is the global default pool.
@@ -77,4 +79,10 @@ func GetPool(name string) Pool {
 		return nil
 	}
 	return p.(Pool)
+}
+
+var logger *zap.Logger
+
+func SetLogger(l *zap.Logger) {
+	logger = l
 }

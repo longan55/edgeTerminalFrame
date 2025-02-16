@@ -20,15 +20,24 @@ type LogConf struct {
 	Level        string `yaml:"level"`
 	Path         string `yaml:"path"`
 	Partten      string `yaml:"partten"`
-	MaxAge       int    `yaml:"maxAge"`
-	RotationTime int    `yaml:"rotationTime"`
+	MaxAge       string `yaml:"maxAge"`
+	RotationTime string `yaml:"rotationTime"`
 	Compress     bool   `yaml:"compress"`
 }
 
 var Logger *zap.Logger
 
 func InitLogger() {
-	if err := initLogger(); err != nil {
+	conf := LogConf{
+		Level:        viper.GetString(LOG_LEVEL),
+		Path:         viper.GetString(LOG_PATH),
+		Partten:      viper.GetString(LOG_PARTTEN),
+		MaxAge:       viper.GetString(LOG_MAXAGE),
+		RotationTime: viper.GetString(LOG_ROTATION),
+		Compress:     viper.GetBool(LOG_USE_COMPRESS),
+	}
+
+	if err := initLogger(conf); err != nil {
 		log.SetFlags(log.Llongfile | log.Ldate | log.Ltime)
 		logfile, err := os.OpenFile("./native.log", os.O_CREATE|os.O_APPEND, 0755)
 		if err != nil {
@@ -39,29 +48,39 @@ func InitLogger() {
 	}
 }
 
-func initLogger() error {
-	if err := os.MkdirAll(viper.GetString(LOG_PATH), os.ModeDir|os.ModePerm); err != nil {
-		return fmt.Errorf("create log dir [%s] error: %w", viper.GetString(LOG_PATH), err)
+func initLogger(conf LogConf) error {
+	if err := os.MkdirAll(conf.Path, os.ModeDir|os.ModePerm); err != nil {
+		return fmt.Errorf("create log dir [%s] error: %w", conf.Path, err)
 	}
 
 	var writer *rotate.RotateLogs
 	var err error
 
+	maxAge, err := time.ParseDuration(conf.MaxAge)
+	if err != nil {
+		maxAge = 7 * 24 * time.Hour
+	}
+
+	rotation, err := time.ParseDuration(conf.RotationTime)
+	if err != nil {
+		rotation = 24 * time.Hour
+	}
+
 	switch runtime.GOOS {
 	case "windows":
 		writer, err = rotate.New(
-			path.Join(viper.GetString(LOG_PATH), viper.GetString(LOG_PARTTEN)),
-			rotate.WithMaxAge(time.Duration(viper.GetInt(LOG_MAXAGE))*24*time.Hour),      //文件最大保存时间
-			rotate.WithRotationTime(time.Duration(viper.GetInt(LOG_ROTATION))*time.Hour), //日志切割时间间隔
-			rotate.WithHandler(rotate.HandlerFunc(CompressLog)),                          //注册 日志切割时回调函数-压缩日志
+			path.Join(conf.Path, conf.Partten),
+			rotate.WithMaxAge(maxAge),                           //文件最大保存时间
+			rotate.WithRotationTime(rotation),                   //日志切割时间间隔
+			rotate.WithHandler(rotate.HandlerFunc(CompressLog)), //注册 日志切割时回调函数-压缩日志
 		)
 	case "linux":
 		writer, err = rotate.New(
-			path.Join(viper.GetString(LOG_PATH), viper.GetString(LOG_PARTTEN)),
-			rotate.WithLinkName("latest.log"),                                            // 创建一个软链接指向最新的日志文件
-			rotate.WithMaxAge(time.Duration(viper.GetInt(LOG_MAXAGE))*24*time.Hour),      //文件最大保存时间
-			rotate.WithRotationTime(time.Duration(viper.GetInt(LOG_ROTATION))*time.Hour), //日志切割时间间隔
-			rotate.WithHandler(rotate.HandlerFunc(CompressLog)),                          //注册 日志切割时回调函数-压缩日志
+			path.Join(conf.Path, conf.Partten),
+			rotate.WithLinkName("latest.log"),                   // 创建一个软链接指向最新的日志文件
+			rotate.WithMaxAge(maxAge),                           //文件最大保存时间
+			rotate.WithRotationTime(rotation),                   //日志切割时间间隔
+			rotate.WithHandler(rotate.HandlerFunc(CompressLog)), //注册 日志切割时回调函数-压缩日志
 		)
 	}
 	if err != nil {
@@ -80,7 +99,7 @@ func initLogger() error {
 
 	// 配置日志级别
 	levelConf := zap.NewAtomicLevel()
-	level, err := zapcore.ParseLevel(viper.GetString(LOG_LEVEL))
+	level, err := zapcore.ParseLevel(conf.Level)
 	if err != nil {
 		log.Printf("parse log level error: %v\n", err)
 		levelConf.SetLevel(zapcore.InfoLevel)

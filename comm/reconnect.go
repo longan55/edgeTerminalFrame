@@ -16,18 +16,21 @@ func InitConnect() error {
 		mutex:     sync.RWMutex{},
 	}
 	//注册退出时任务，关闭所有连接
-	global.RegisterQuitTask(func() error {
-		for c, isConnected := range ConnectorManager.container {
-			if isConnected {
-				if err := c.Close(); err != nil {
-					global.Logger.Error("关闭失败", zap.String("Uri", c.Uri()))
-				} else {
-					global.Logger.Info("关闭成功", zap.String("Uri", c.Uri()))
+	global.RegisterQuitTask(global.Task{
+		F: func() error {
+			for c, isConnected := range ConnectorManager.container {
+				if isConnected {
+					if err := c.Close(); err != nil {
+						global.Logger.Error("关闭失败", zap.String("Uri", c.Uri()))
+					} else {
+						global.Logger.Info("关闭成功", zap.String("Uri", c.Uri()))
+					}
 				}
 			}
-		}
-		return nil
-	}, "连接池依次关闭连接")
+			return nil
+		},
+		Content: "连接池依次关闭连接",
+	})
 	//开启状态监听协程，定时尝试重连断开的连接
 	gopool.Go(func() {
 		ticker2 := time.NewTicker(12500 * time.Millisecond).C

@@ -19,13 +19,15 @@ const (
 	PLATFORMMODE = 0 //平台模式
 )
 
+type Task struct {
+	F       func() error
+	Content string
+}
+
 type process struct {
 	mux      sync.Mutex
 	runmode  int
-	quittask []struct {
-		f       func() error
-		content string
-	}
+	quittask []Task
 }
 
 func (p *process) SetRunMode(mode int) {
@@ -35,27 +37,21 @@ func (p *process) RunMode() int {
 	return p.runmode
 }
 
-func (p *process) RegisterQuitTask(f func() error, content string) {
+func (p *process) RegisterQuitTask(task Task) {
 	p.mux.Lock()
 	defer p.mux.Unlock()
 
-	p.quittask = append(p.quittask, struct {
-		f       func() error
-		content string
-	}{
-		f, content,
+	p.quittask = append(p.quittask, Task{
+		task.F, task.Content,
 	})
 }
 
-func RegisterQuitTask(f func() error, content string) {
+func RegisterQuitTask(task Task) {
 	Process.mux.Lock()
 	defer Process.mux.Unlock()
 
-	Process.quittask = append(Process.quittask, struct {
-		f       func() error
-		content string
-	}{
-		f, content,
+	Process.quittask = append(Process.quittask, Task{
+		task.F, task.Content,
 	})
 }
 
@@ -66,9 +62,9 @@ func GracefullyExit() {
 	sig := <-close
 	Logger.Info("程序接收信号", zap.String("Signal", sig.String()), zap.Any("Code", fmt.Sprintf("%d", sig)))
 	for _, task := range Process.quittask {
-		Logger.Info("执行退出任务: " + task.content)
-		if err := task.f(); err != nil {
-			Logger.Error(task.content, zap.Error(err))
+		Logger.Info("执行退出任务: " + task.Content)
+		if err := task.F(); err != nil {
+			Logger.Error(task.Content, zap.Error(err))
 		}
 	}
 }

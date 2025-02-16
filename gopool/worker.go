@@ -16,7 +16,6 @@ package gopool
 
 import (
 	"fmt"
-	"log"
 
 	"runtime/debug"
 	"sync"
@@ -62,7 +61,8 @@ func (w *worker) run() {
 							w.pool.panicHandler(t.ctx, r)
 						} else {
 							msg := fmt.Sprintf("GOPOOL: panic in pool: %s: %v: %s", w.pool.name, r, debug.Stack())
-							log.Println(msg)
+							// log.Println(msg)
+							logger.Panic(msg)
 						}
 					}
 				}()

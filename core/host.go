@@ -3,6 +3,7 @@ package core
 import (
 	"crypto/md5"
 	"edgeTerminalFrame/gopool"
+	"edgeTerminalFrame/util"
 	"errors"
 	"fmt"
 	"net"
@@ -132,12 +133,12 @@ func (host Host) GetCpuInfo() CpuInfo {
 	for _, one := range cpuPercent {
 		totalUsed += one
 	}
-	cpuInfo.TotalUsed = SaveBit(totalUsed, 2)
+	cpuInfo.TotalUsed = util.SaveBit(totalUsed, 2)
 	//CPU空闲率
 	cpuInfo.Free = 100 - cpuInfo.TotalUsed
-	cpuInfo.Free = SaveBit(cpuInfo.Free, 2)
+	cpuInfo.Free = util.SaveBit(cpuInfo.Free, 2)
 	//当前进程CPU使用率
-	cpuInfo.SelfUsed = SaveBit(selfPercent, 2)
+	cpuInfo.SelfUsed = util.SaveBit(selfPercent, 2)
 
 	return cpuInfo
 }
@@ -161,18 +162,18 @@ func (host Host) GetMemoryInfo() MemoryInfo {
 	}
 	//内存总量，GByte
 	total := float64(vmStat.Total) / (1024 * 1024 * 1024)
-	memory.Total = SaveBit(total, 2)
+	memory.Total = util.SaveBit(total, 2)
 
 	//内存使用量
 	used := float64(vmStat.Used) / (1024 * 1024 * 1024)
-	memory.Used = SaveBit(used, 2)
+	memory.Used = util.SaveBit(used, 2)
 
 	//内存空闲量
 	free := float64(vmStat.Available) / (1024 * 1024 * 1024)
-	memory.Free = SaveBit(free, 2)
+	memory.Free = util.SaveBit(free, 2)
 
 	//使用率
-	memory.Usage = SaveBit(vmStat.UsedPercent, 2)
+	memory.Usage = util.SaveBit(vmStat.UsedPercent, 2)
 	return memory
 }
 
@@ -208,7 +209,7 @@ func (host Host) GetDiskInfo(path string) DiskInfo {
 	info.Used = float64(diskStat.Used) / (1024 * 1024 * 1024)
 	//info.Used = fmt.Sprintf("%.02f GB", used)
 	//使用率
-	info.Usage = SaveBit(diskStat.UsedPercent, 2)
+	info.Usage = util.SaveBit(diskStat.UsedPercent, 2)
 	return info
 }
 

@@ -14,9 +14,9 @@ logConf:
   #日志名格式
   partten: "%Y%m%d.log"
   #日志文件最大保存时间 单位天 默认7天
-  maxAge: 30
+  maxAge: 168h
   #切割时间  整数 单位小时 默认1小时
-  rotationTime: 24
+  rotationTime: 24h
   #true: 开启压缩, false: 关闭压缩
   compress: false
 
