@@ -25,7 +25,11 @@ type LogConf struct {
 	Compress     bool   `yaml:"compress"`
 }
 
-var Logger *zap.Logger
+var (
+	Logger   *zap.Logger
+	loggerOK = make(chan struct{})
+	preLog   = make(map[string][]zapcore.Field)
+)
 
 func InitLogger() {
 	conf := LogConf{
@@ -133,7 +137,17 @@ func initLogger(conf LogConf) error {
 	Logger = logger
 
 	Logger.Info("日志记录器创建成功")
-	Logger.Info("配置文件", zap.Any("Content", viper.AllSettings()))
+
+	go func() {
+		select {
+		case <-loggerOK:
+			for msg, fileds := range preLog {
+				Logger.Info(msg, fileds...)
+			}
+		}
+	}()
+
+	loggerOK <- struct{}{}
 	return nil
 }
 
@@ -193,5 +207,13 @@ func CompressLog(event rotate.Event) {
 	if err != nil {
 		Logger.Error("日志移除失败", zap.String("FilePath", prePath), zap.Error(err))
 		return
+	}
+}
+
+func PreLog(msg string, fields ...zapcore.Field) {
+	if Logger == nil {
+		preLog[msg] = fields
+	} else {
+		Logger.Info(msg, fields...)
 	}
 }

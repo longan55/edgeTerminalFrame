@@ -3,7 +3,6 @@ system:
   #devlopment, test环境会将日志同时输出控制台和写入文件,production环境只写入文件
   environment: devlopment
   # true: watching config; false: don't watching config
-  watchConfig: true
 logConf:
   # debug、info、warn、error、dpanic、panic、fatal
   level: debug
@@ -18,7 +17,6 @@ logConf:
   #切割时间  整数 单位小时 默认1小时
   rotationTime: 24h
   #true: 开启压缩, false: 关闭压缩
-  compress: false
 
 gateway:
   name: 1号网关

@@ -14,10 +14,22 @@ import (
 var Process = &process{}
 
 const (
-	version      = "V0.0.0209"
-	GATEWAYMODE  = 1 //网关模式
-	PLATFORMMODE = 0 //平台模式
+	version              = "V0.0.0217"
+	GATEWAYMODE  runmode = 0 //网关模式
+	PLATFORMMODE runmode = 1 //平台模式
 )
+
+type runmode byte
+
+func (r runmode) String() string {
+	switch r {
+	case 0:
+		return "网关模式"
+	case 1:
+		return "平台模式"
+	}
+	return "未知"
+}
 
 type Task struct {
 	F       func() error
@@ -26,14 +38,14 @@ type Task struct {
 
 type process struct {
 	mux      sync.Mutex
-	runmode  int
+	runmode  runmode
 	quittask []Task
 }
 
-func (p *process) SetRunMode(mode int) {
+func (p *process) SetRunMode(mode runmode) {
 	p.runmode = mode
 }
-func (p *process) RunMode() int {
+func (p *process) RunMode() runmode {
 	return p.runmode
 }
 
@@ -56,7 +68,7 @@ func RegisterQuitTask(task Task) {
 }
 
 func GracefullyExit() {
-	Logger.Info("EDGE程序启动成功", zap.String("Version", version))
+	Logger.Info("EDGE程序启动成功", zap.String("模式", Process.runmode.String()), zap.String("版本", version))
 	close := make(chan os.Signal, 1)
 	signal.Notify(close, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP)
 	sig := <-close

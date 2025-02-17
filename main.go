@@ -12,7 +12,7 @@ import (
 )
 
 func bootStrap() {
-	global.LoadConfig()
+	global.LoadConfig(true)
 
 	//init logger
 	global.InitLogger()
@@ -32,25 +32,6 @@ func main() {
 			global.Logger.Panic(fmt.Sprintf("%+v\n%v", e, fmt.Sprint(string(debug.Stack()))))
 		}
 	}()
-
-	//创建Host
-	hostinfo := core.NewHostInfo()
-	hostinfo.SetName("网关主体")
-	hostinfo.SetSN("SNNNNNNNN")
-	//host := core.NewHost(hostinfo)
-	//
-	// cpuinfo := host.GetCpuInfo()
-	// fmt.Println("cpuinfo", cpuinfo)
-	// meminfo := host.GetMemoryInfo()
-	// fmt.Println("meminfo", meminfo)
-	// diskinfo := host.GetDiskInfo("/")
-	// fmt.Println("diskinfo", diskinfo)
-	// info := host.Info()
-	// fmt.Println("hostinfo", info)
-	//
-	global.Logger.Debug("DEBUG")
-	global.Logger.Info("Info")
-	global.Logger.Error("Error", zap.String("Key", "value"))
 
 	gopool.Go(func() {
 		if err := core.EdgeCore.Preload(); err != nil {

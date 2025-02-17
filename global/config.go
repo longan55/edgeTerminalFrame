@@ -6,7 +6,20 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
+
+func SetConfigName(configname string) {
+	Config.configName = configname
+}
+
+func SetConfigType(typename string) {
+	Config.configType = typename
+}
+
+func AddConfigPath(path string) {
+	Config.configPath = append(Config.configPath, path)
+}
 
 // Config Key
 const (
@@ -44,13 +57,62 @@ const (
 // config
 // key/value store
 // default
+func init() {
+	Config = &config{
+		configName: "config",
+		configType: "yaml",
+		configPath: []string{"."},
+	}
+}
 
-func LoadConfig() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("/etc/etf")
-	viper.AddConfigPath(`D:\develoment\project\go\edgeTerminalFrame`)
-	viper.AddConfigPath(".")
+var Config *config
+
+type config struct {
+	configName string
+	configType string
+	configPath []string
+	GateWay    gateway `yaml:"gateway"`
+	System     system  `yaml:"system"`
+	LogConf    logConf `yaml:"logConf"`
+}
+
+type gateway struct {
+	Name string `yaml:"name"`
+	SN   string `yaml:"sn"`
+}
+type system struct {
+	Environment string `yaml:"environment"`
+}
+
+type logConf struct {
+	Level    string `yaml:"level"`
+	Path     string `yaml:"path"`
+	Partten  string `yaml:"partten"`
+	MaxAge   string `yaml:"maxAge"`
+	Rotation string `yaml:"rotationTime"`
+	Compress bool   `yaml:"compress"`
+}
+
+func LoadConfig(watch bool) {
+	loadConfig()
+	if watch {
+		//Watching and re-reading config files
+		viper.OnConfigChange(func(e fsnotify.Event) {
+			fmt.Println("Config file changed:", e)
+			fmt.Println("Config file changed:", e.Name)
+			loadConfig()
+		})
+		viper.WatchConfig()
+	}
+}
+
+func loadConfig() {
+	viper.SetConfigName(Config.configName)
+	viper.SetConfigType(Config.configType)
+	for _, path := range Config.configPath {
+		viper.AddConfigPath(path)
+	}
+
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
@@ -66,12 +128,8 @@ func LoadConfig() {
 	// viper.WriteConfigAs("/path/to/my/.config")
 	// viper.SafeWriteConfigAs("/path/to/my/.config") // will error since it has already been written
 	// viper.SafeWriteConfigAs("/path/to/my/.other_config")
-
-	if viper.GetBool(SYS_WATCH_CONFIG) {
-		//Watching and re-reading config files
-		viper.OnConfigChange(func(e fsnotify.Event) {
-			fmt.Println("Config file changed:", e.Name)
-		})
-		viper.WatchConfig()
+	if err := viper.Unmarshal(&Config); err != nil {
+		panic(err)
 	}
+	PreLog("配置文件", zap.Any("Config", viper.AllSettings()))
 }
