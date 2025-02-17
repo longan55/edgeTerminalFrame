@@ -1,5 +1,11 @@
 package core
 
+import (
+	"edgeTerminalFrame/global"
+
+	"github.com/spf13/viper"
+)
+
 //1.连接数据服务器，mqtt broker
 
 //1. 核心启动，查询数据库，获取设备信息
@@ -32,7 +38,11 @@ func (edge *edge) Preload() error {
 	////查询数据库，加载上次运行的数据
 	//### 2.加载设备信息
 	//LoadDevice()
-
+	info := NewHostInfo()
+	info.SetName(viper.GetString(global.GATAWAY_NAME))
+	info.SetSN(viper.GetString(global.GATAWAY_SN))
+	host := NewHost(info)
+	_ = host.Info()
 	return nil
 }
 

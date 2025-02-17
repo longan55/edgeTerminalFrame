@@ -23,6 +23,10 @@ func AddConfigPath(path string) {
 
 // Config Key
 const (
+
+	//
+	GATAWAY_NAME     = "gateway.name"
+	GATAWAY_SN       = "gateway.sn"
 	SYS_ENV          = "system.environment"
 	SYS_WATCH_CONFIG = "system.watchConfig"
 	LOG_LEVEL        = "logConf.level"
